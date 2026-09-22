@@ -7,94 +7,72 @@ app.use(bodyParser.json());
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID;
 const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN || "theo123";
-
-const SUPPORT_NUMBER = "+267 777 63889";
-const SUPPORT_EMAIL = "moyotheo21@gmail.com";
-const GROUP_LINK = "https://chat.whatsapp.com/YOUR-ACTUAL-LINK-HERE";
+const SUPPORT = "+267 777 63889";
 
 app.get('/webhook', (req, res) => {
-  if (req.query['hub.verify_token'] === VERIFY_TOKEN) {
-      res.send(req.query['hub.challenge']);
-        } else {
-            res.sendStatus(403);
-              }
-              });
+  if (req.query['hub.verify_token'] === VERIFY_TOKEN) res.send(req.query['hub.challenge']);
+    else res.sendStatus(403);
+    });
 
-              app.post('/webhook', async (req, res) => {
-                try {
-                    const entry = req.body.entry?.[0];
-                        const changes = entry?.changes?.[0];
-                            const value = changes?.value;
-                                const message = value?.messages?.[0];
+    app.post('/webhook', async (req, res) => {
+      try {
+          const msg = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+              if (!msg) return res.sendStatus(200);
+                  const from = msg.from;
+                      const text = (msg.text?.body || "").trim().toLowerCase();
+                          let reply = "";
 
-                                    if (!message) return res.sendStatus(200);
+                              if (["menu","hi","hello","start","ok"].includes(text)) {
+                                    reply = `🤖 *WELCOME TO THEO SERVICES* 🤖
 
-                                        const from = message.from;
-                                            const text = message.text?.body?.trim().toLowerCase() || "";
-                                                let reply = "";
+                                    1️⃣ BOT DEPLOYMENT
+                                    24/7 non-stop hosting
 
-                                                    if (text === "menu" || text === "hi" || text === "hello") {
-                                                          reply = `🤖 *WELCOME TO THEO SERVICES*
+                                    2️⃣ BOT TYPES
+                                    MD Bot, XMD, Plugins
 
-                                                          1️⃣ *BOT DEPLOYMENT*
-                                                             We deploy your bot 24/7
+                                    3️⃣ WHATSAPP SOLUTION
+                                    30 Days Guarantee
 
-                                                             2️⃣ *BOT TYPES*
-                                                                MD, XMD, Plugins available
-                                                                   🔗 Group: ${GROUP_LINK}
+                                    4️⃣ PTERODACTYL PANELS
+                                    2GB | 4GB | 8GB | 16GB | UNLIMITED
 
-                                                                   3️⃣ *WHATSAPP SOLUTION*
-                                                                      ✅ 30 Days Guarantee
-                                                                         ✅ Fast Support
+                                    5️⃣ FULL PRICING
+                                    Complete price list
 
-                                                                         4️⃣ *PTERODACTYL PANELS*
-                                                                            💾 2GB, 4GB, 8GB, 16GB
-                                                                               ♾️ UNLIMITED Plans
-                                                                                  From 15 Pula/month
+                                    6️⃣ SUPPORT
+                                    Contact Us
 
-                                                                                  5️⃣ *FULL PRICING*
-                                                                                     💰 MD: 50 Pula
-                                                                                        💰 XMD: 100 Pula
-                                                                                           💾 Panels from 15 Pula
+                                    Reply with *1-6*
+                                    📞 ${SUPPORT}`;
+                                        } else if (text === "1") {
+                                              reply = `1️⃣ *BOT DEPLOYMENT*\n✅ 24/7 Hosting\n✅ Instant Setup\n✅ Auto Restart\n\nWe keep your bot online always.\n\nType *MENU*\n📞 ${SUPPORT}`;
+                                                  } else if (text === "2") {
+                                                        reply = `2️⃣ *BOT TYPES*\n\n🔥 THEO-MD: 50 Pula\n🔥 THEO-XMD: 100 Pula\n🔥 Plugins Available\n\nType *MENU*\n📞 ${SUPPORT}`;
+                                                            } else if (text === "3") {
+                                                                  reply = `3️⃣ *WHATSAPP SOLUTION*\n\n✅ 30 Days Guarantee\n✅ Ban Fix\n✅ Pairing Fix\n✅ 24/7 Support\n\nType *MENU*\n📞 ${SUPPORT}`;
+                                                                      } else if (text === "4") {
+                                                                            reply = `4️⃣ *PTERODACTYL PANELS*\n\n💾 2GB - 15 Pula\n💾 4GB - 25 Pula\n💾 8GB - 40 Pula\n💾 16GB - 60 Pula\n♾️ UNLIMITED - 100 Pula\n\nType *MENU*\n📞 ${SUPPORT}`;
+                                                                                } else if (text === "5") {
+                                                                                      reply = `💰 *FULL PRICING*\n\n🤖 BOTS:\nMD Bot 50 Pula\nXMD Bot 100 Pula\n\n💾 PANELS:\n2GB 15 P\n4GB 25 P\n8GB 40 P\n16GB 60 P\nUNLIMITED 100 P\n\n📞 ${SUPPORT}\n\nType *MENU*`;
+                                                                                          } else if (text === "6") {
+                                                                                                reply = `📞 *SUPPORT*\n\nPhone: ${SUPPORT}\nEmail: moyotheo21@gmail.com\nOnline 24/7\n\nType *MENU*`;
+                                                                                                    } else {
+                                                                                                          reply = `Send *MENU* and choose 1-6\n📞 ${SUPPORT}`;
+                                                                                                              }
 
-                                                                                           6️⃣ *SUPPORT*
-                                                                                              📞 ${SUPPORT_NUMBER}
-                                                                                                 📧 ${SUPPORT_EMAIL}
+                                                                                                                  await axios.post(`https://graph.facebook.com/v20.0/${PHONE_NUMBER_ID}/messages`, {
+                                                                                                                        messaging_product: "whatsapp",
+                                                                                                                              to: from,
+                                                                                                                                    text: { body: reply }
+                                                                                                                                        }, { headers: { Authorization: `Bearer ${ACCESS_TOKEN}` } });
 
-                                                                                                 Type *1-6* to choose 🙏`;
-                                                                                                     } else if (text === "1") {
-                                                                                                           reply = `1️⃣ *BOT DEPLOYMENT*\n\nWe host your bot 24/7 non-stop!\n✅ No disconnections\n✅ Instant deploy\n✅ Cheap\n\nType *MENU* to go back\n📞 ${SUPPORT_NUMBER}`;
-                                                                                                               } else if (text === "2") {
-                                                                                                                     reply = `2️⃣ *BOT TYPES*\n\n🔥 MD Bot\n🔥 XMD Bot\n🔥 Custom Plugins\n\nJoin our group:\n${GROUP_LINK}\n\nType *MENU* to go back`;
-                                                                                                                         } else if (text === "3") {
-                                                                                                                               reply = `3️⃣ *WHATSAPP SOLUTION*\n\n✅ 30 Days Guarantee\n✅ We fix all errors\n✅ Ban support\n✅ Fast response\n\nType *MENU* to go back`;
-                                                                                                                                   } else if (text === "4") {
-                                                                                                                                         reply = `4️⃣ *PTERODACTYL PANELS*\n\n💾 2GB - 15 Pula\n💾 4GB - 25 Pula\n💾 8GB - 40 Pula\n💾 16GB - 60 Pula\n♾️ UNLIMITED - 100 Pula\n\nType *MENU* to go back`;
-                                                                                                                                             } else if (text === "5") {
-                                                                                                                                                   reply = `💰 *FULL PRICING*\n\n🤖 MD Bot: 50 Pula\n🤖 XMD Bot: 100 Pula\n💾 Panel 2GB: 15 Pula\n💾 Panel UNLIMITED: 100 Pula\n\n📞 ${SUPPORT_NUMBER}\n\nType *MENU* to go back`;
-                                                                                                                                                       } else if (text === "6") {
-                                                                                                                                                             reply = `📞 *SUPPORT*\n\nPhone: ${SUPPORT_NUMBER}\nEmail: ${SUPPORT_EMAIL}\nGroup: ${GROUP_LINK}\n\nWe are online 24/7 🙏\n\nType *MENU* to go back`;
-                                                                                                                                                                 } else {
-                                                                                                                                                                       reply = `Send *MENU* - Choose 1-6 🙏\n📞 ${SUPPORT_NUMBER}`;
-                                                                                                                                                                           }
+                                                                                                                                            res.sendStatus(200);
+                                                                                                                                              } catch (e) {
+                                                                                                                                                  console.log(e.response?.data || e.message);
+                                                                                                                                                      res.sendStatus(200);
+                                                                                                                                                        }
+                                                                                                                                                        });
 
-                                                                                                                                                                               await axios({
-                                                                                                                                                                                     method: "POST",
-                                                                                                                                                                                           url: `https://graph.facebook.com/v20.0/${PHONE_NUMBER_ID}/messages`,
-                                                                                                                                                                                                 headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
-                                                                                                                                                                                                       data: {
-                                                                                                                                                                                                               messaging_product: "whatsapp",
-                                                                                                                                                                                                                       to: from,
-                                                                                                                                                                                                                               text: { body: reply }
-                                                                                                                                                                                                                                     }
-                                                                                                                                                                                                                                         });
-
-                                                                                                                                                                                                                                             res.sendStatus(200);
-                                                                                                                                                                                                                                               } catch (e) {
-                                                                                                                                                                                                                                                   console.log(e.response?.data || e.message);
-                                                                                                                                                                                                                                                       res.sendStatus(200);
-                                                                                                                                                                                                                                                         }
-                                                                                                                                                                                                                                                         });
-
-                                                                                                                                                                                                                                                         app.get('/', (req,res) => res.send('Bot is running'));
-                                                                                                                                                                                                                                                         app.listen(10000, () => console.log('Bot running on 10000'));
+                                                                                                                                                        app.get('/', (req,res)=>res.send('Bot running'));
+                                                                                                                                                        app.listen(10000, ()=>console.log('Bot running'));
